@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             filteredRecipes = recipes;
         }
-        currentPage = 1; // Réinitialise à la première page
+        currentPage = 1; 
         displayRecipes();
     });
 });
