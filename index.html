@@ -14,8 +14,12 @@
 </header>
 
 <div id="search">
-    <input type="text" id="search-bar" placeholder="Rechercher une recette...">
-    <div id="tags-container"></div>
+    <input type="text" id="search-bar" placeholder="Rechercher une recette..." aria-label="Recherche principale">
+    
+    <div id="tags-container">
+
+    </div>
+
     <div id="advanced-filters">
         <select id="ingredient-filter">
             <option value="">Ingrédients</option>
@@ -29,7 +33,10 @@
     </div>
 </div>
 
-<section id="recipes"></section>
+<section id="recipes">
+
+</section>
+
 <div id="pagination">
     <button id="prev-page" disabled>Précédent</button>
     <span id="page-info"></span>

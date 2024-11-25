@@ -43,20 +43,30 @@ header p {
     border-radius: 4px;
 }
 
+/* Conteneur des tags */
 #tags-container {
     margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
+/* Style des tags */
 .tag {
-    display: inline-block;
-    background: #ff7c5b;
+    background-color: #ff6f61;
     color: white;
     padding: 5px 10px;
-    margin: 5px;
     border-radius: 20px;
     font-size: 0.9rem;
+    font-weight: bold;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
+
+.tag:hover {
+    background-color: #e85950;
+}
+
 
 #advanced-filters {
     margin-top: 20px;
