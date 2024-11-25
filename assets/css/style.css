@@ -1,3 +1,4 @@
+/* Reset de base */
 * {
     margin: 0;
     padding: 0;
@@ -5,70 +6,181 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
     padding: 20px;
+    color: #333;
 }
 
+/* Header */
 header {
     text-align: center;
     margin-bottom: 20px;
 }
 
+header h1 {
+    font-size: 2.5rem;
+    color: #ff7c5b;
+}
+
+header p {
+    font-size: 1.2rem;
+    color: #555;
+}
+
+/* Barre de recherche et filtres */
 #search {
-    width: 100%;
-    max-width: 500px;
     margin-bottom: 20px;
+    text-align: center;
 }
 
 #search-bar {
-    width: 100%;
+    width: 80%;
     padding: 10px;
-    font-size: 16px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
+#tags-container {
+    margin-top: 10px;
+}
+
+.tag {
+    display: inline-block;
+    background: #ff7c5b;
+    color: white;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+#advanced-filters {
+    margin-top: 20px;
+}
+
+select {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+/* Section des recettes */
 #recipes {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
-    width: 100%;
-    max-width: 1200px;
+    margin-top: 20px;
 }
 
 .recipe-card {
-    width: 100%; /* Laisse la carte occuper toute la largeur de sa colonne */
-    max-width: 350px; /* Taille fixe maximale */
-    height: 450px; /* Hauteur fixe pour un alignement uniforme */
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Aligne les éléments de manière uniforme */
-    transition: transform 0.2s ease;
-    margin: 0 auto; /* Centre les cartes si elles ne remplissent pas la rangée */
 }
 
 .recipe-card:hover {
     transform: scale(1.05);
 }
 
-.recipe-card h3 {
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.recipe-card p {
-    color: #555;
+.image-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-bottom: 2px solid #f0f0f0;
 }
 
 .recipe-image {
-    width: 100%; /* L'image occupe toute la largeur de la carte */
-    height: 200px; /* Hauteur fixe pour une uniformité visuelle */
-    border-radius: 8px; /* Coins arrondis */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Détails de la recette */
+.recipe-details {
+    padding: 15px;
+}
+
+.recipe-details h3 {
+    color: #ff7c5b;
+    font-size: 1.5rem;
     margin-bottom: 10px;
-    object-fit: cover; /* Recadre l'image sans distorsion */
+}
+
+.recipe-time {
+    font-size: 1rem;
+    color: #777;
+    margin-bottom: 15px;
+}
+
+.recipe-description {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.recipe-details h4 {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    color: #333;
+}
+
+.ingredients-list, .ustensils-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.ingredients-list li, .ustensils-list li {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.recipe-details p {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+#pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px;
+}
+
+#pagination button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    background: #ff7c5b;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#pagination button:hover:not(:disabled) {
+    background: #e5664c;
+}
+
+#pagination #page-info {
+    font-size: 1rem;
+    color: #555;
 }

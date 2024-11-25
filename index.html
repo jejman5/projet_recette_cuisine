@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sup de Cuisine - Recettes</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
 <header>
     <h1>Sup de Cuisine</h1>
-    <p>Bienvenue sur notre collection de recettes !</p>
+    <p>Découvrez les meilleures recettes adaptées à vos goûts.</p>
 </header>
 
 <div id="search">
-    <input type="text" id="search-bar" placeholder="Rechercher une recette..." aria-label="Recherche principale">
-    <div id="tags-container">
-        <!-- Tags sélectionnés apparaîtront ici -->
-    </div>
+    <input type="text" id="search-bar" placeholder="Rechercher une recette...">
+    <div id="tags-container"></div>
     <div id="advanced-filters">
         <select id="ingredient-filter">
             <option value="">Ingrédients</option>
@@ -30,9 +29,12 @@
     </div>
 </div>
 
-<section id="recipes">
-    <!-- card recette -->
-</section>
+<section id="recipes"></section>
+<div id="pagination">
+    <button id="prev-page" disabled>Précédent</button>
+    <span id="page-info"></span>
+    <button id="next-page">Suivant</button>
+</div>
 
 <script src="assets/js/script.js"></script>
 </body>
