@@ -94,20 +94,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     [ingredientFilter, utensilFilter, applianceFilter].forEach(filter => {
         filter.addEventListener('change', (event) => {
             const { id, value } = event.target;
-            const type = id.replace('-filter', '');
+    
+            // Associe les IDs aux clés correctes dans selectedTags
+            const typeMap = {
+                'ingredient-filter': 'ingredients',
+                'utensil-filter': 'utensils',
+                'appliance-filter': 'appliances'
+            };
+    
+            const type = typeMap[id];
+    
+            // Vérifie si le type existe dans selectedTags
+            if (!type) {
+                console.error(`Type "${id}" non valide. Vérifiez les IDs dans le HTML.`);
+                return;
+            }
+    
+            // Ajout du tag si valide
             if (value && !selectedTags[type].includes(value)) {
                 selectedTags[type].push(value);
+                console.log("Tag ajouté :", value, type);
                 addTag(value, type);
                 filterRecipes();
             }
         });
     });
+    
 
     // Ajout d'un tag
     function addTag(tag, type) {
         const tagElement = document.createElement('span');
         tagElement.className = 'tag';
         tagElement.textContent = `${tag} (${type})`;
+        console.log("tagtype :: ", tag, type);
         tagElement.addEventListener('click', () => {
             // Supprimer le tag
             selectedTags[type] = selectedTags[type].filter(t => t !== tag);
