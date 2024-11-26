@@ -14,22 +14,31 @@
 </header>
 
 <div id="search">
-    <input type="text" id="search-bar" placeholder="Rechercher une recette..." aria-label="Recherche principale">
+    <input type="text" id="search-bar" placeholder="Rechercher une recette">
     
-    <div id="tags-container">
-
-    </div>
+    <div id="tags-container"></div>
 
     <div id="advanced-filters">
-        <select id="ingredient-filter">
-            <option value="">Ingrédients</option>
-        </select>
-        <select id="utensil-filter">
-            <option value="">Ustensiles</option>
-        </select>
-        <select id="appliance-filter">
-            <option value="">Appareils</option>
-        </select>
+        <div class="filter-dropdown">
+            <input type="text" id="ingredient-search" class="tag-search" placeholder="Rechercher un ingrédient">
+            <select id="ingredient-filter" multiple>
+                <!-- Options seront ajoutées dynamiquement -->
+            </select>
+        </div>
+
+        <div class="filter-dropdown">
+            <input type="text" id="utensil-search" class="tag-search" placeholder="Rechercher un ustensile">
+            <select id="utensil-filter" multiple>
+                <!-- Options seront ajoutées dynamiquement -->
+            </select>
+        </div>
+
+        <div class="filter-dropdown">
+            <input type="text" id="appliance-search" class="tag-search" placeholder="Rechercher un appareil">
+            <select id="appliance-filter" multiple>
+                <!-- Options seront ajoutées dynamiquement -->
+            </select>
+        </div>
     </div>
 </div>
 
