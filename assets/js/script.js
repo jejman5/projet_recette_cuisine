@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const nextPageButton = document.getElementById('next-page');
     const pageInfo = document.getElementById('page-info');
     
-    // Nouvelle initialisation des éléments de recherche
     const ingredientFilter = document.getElementById('ingredient-filter');
     const ingredientSearch = document.getElementById('ingredient-search');
     const utensilFilter = document.getElementById('utensil-filter');
