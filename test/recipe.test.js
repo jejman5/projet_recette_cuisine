@@ -1,204 +1,174 @@
-// recipe.test.js
-import '@testing-library/jest-dom';
+import fs from 'fs';
+import path from 'path';
 
-// Mock des données de test
-const mockRecipes = [
-  {
-    name: "Poulet rôti",
-    description: "Délicieux poulet rôti aux herbes",
-    time: 90,
-    ingredients: [
-      { ingredient: "Poulet", quantity: 1, unit: "entier" },
-      { ingredient: "Thym", quantity: 2, unit: "branches" }
-    ],
-    ustensils: ["Plat", "Four"],
-    appliance: "Four"
+// Mock des éléments du DOM
+const mockDOMElements = {
+  'search-bar': { value: '', addEventListener: jest.fn() },
+  'recipes': { innerHTML: '', appendChild: jest.fn() },
+  'prev-page': { disabled: false, addEventListener: jest.fn() },
+  'next-page': { disabled: false, addEventListener: jest.fn() },
+  'page-info': { textContent: '' },
+  'ingredient-filter': { 
+    selectedOptions: [], 
+    options: [],
+    addEventListener: jest.fn(),
+    innerHTML: ''
   },
-  {
-    name: "Pâtes carbonara",
-    description: "Pâtes à la carbonara traditionnelles",
-    time: 25,
-    ingredients: [
-      { ingredient: "Pâtes", quantity: 500, unit: "g" },
-      { ingredient: "Lardons", quantity: 200, unit: "g" }
-    ],
-    ustensils: ["Casserole", "Poêle"],
-    appliance: "Plaque de cuisson"
+  'utensil-filter': { 
+    selectedOptions: [], 
+    options: [],
+    addEventListener: jest.fn(),
+    innerHTML: ''
+  },
+  'appliance-filter': { 
+    selectedOptions: [], 
+    options: [],
+    addEventListener: jest.fn(),
+    innerHTML: ''
+  },
+  'ingredient-search': { addEventListener: jest.fn() },
+  'utensil-search': { addEventListener: jest.fn() },
+  'appliance-search': { addEventListener: jest.fn() },
+  'tags-container': { 
+    innerHTML: '', 
+    querySelector: jest.fn(),
+    querySelectorAll: jest.fn(),
+    appendChild: jest.fn()
   }
-];
+};
 
-// Mock du DOM
-document.body.innerHTML = `
-  <input id="search-bar" />
-  <div id="recipes"></div>
-  <div id="tags-container"></div>
-  <select id="ingredient-filter"></select>
-  <select id="utensil-filter"></select>
-  <select id="appliance-filter"></select>
-  <button id="prev-page"></button>
-  <button id="next-page"></button>
-  <span id="page-info"></span>
-`;
+// Mock de la fonction document.getElementById
+document.getElementById = jest.fn((id) => mockDOMElements[id]);
 
-// Tests pour la fonction filterRecipes
-describe('Filtrage des recettes', () => {
-  let selectedTags;
-  let filteredRecipes;
-  
+// Mock de fetch
+global.fetch = jest.fn(() => 
+  Promise.resolve({
+    json: () => Promise.resolve([
+      {
+        name: 'Salade de Tomates',
+        description: 'Une délicieuse salade',
+        ingredients: [{ ingredient: 'Tomate' }],
+        ustensils: ['Couteau'],
+        appliance: 'Couteau',
+        image: 'salade.jpg',
+        time: 15
+      },
+      {
+        name: 'Poulet Rôti',
+        description: 'Un poulet savoureux',
+        ingredients: [{ ingredient: 'Poulet' }],
+        ustensils: ['Four'],
+        appliance: 'Four',
+        image: 'poulet.jpg',
+        time: 60
+      }
+    ])
+  })
+);
+
+describe('Recipe Application', () => {
   beforeEach(() => {
-    selectedTags = { ingredients: [], utensils: [], appliances: [] };
-    filteredRecipes = [...mockRecipes];
-    document.getElementById('search-bar').value = '';
-  });
-
-  test('Recherche par nom de recette', () => {
-    document.getElementById('search-bar').value = 'poulet';
-    const filtered = filterRecipes(mockRecipes, selectedTags, document.getElementById('search-bar').value);
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Poulet rôti');
-  });
-
-  test('Recherche avec moins de 3 caractères', () => {
-    document.getElementById('search-bar').value = 'po';
-    const filtered = filterRecipes(mockRecipes, selectedTags, document.getElementById('search-bar').value);
-    expect(filtered).toEqual(mockRecipes);
-  });
-
-  test('Filtrage par ingrédient', () => {
-    selectedTags.ingredients = ['Poulet'];
-    const filtered = filterRecipes(mockRecipes, selectedTags, '');
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Poulet rôti');
-  });
-
-  test('Filtrage par ustensile', () => {
-    selectedTags.utensils = ['Casserole'];
-    const filtered = filterRecipes(mockRecipes, selectedTags, '');
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Pâtes carbonara');
-  });
-
-  test('Filtrage par appareil', () => {
-    selectedTags.appliances = ['Four'];
-    const filtered = filterRecipes(mockRecipes, selectedTags, '');
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Poulet rôti');
-  });
-
-  test('Filtrage combiné (recherche + tags)', () => {
-    document.getElementById('search-bar').value = 'poulet';
-    selectedTags.appliances = ['Four'];
-    const filtered = filterRecipes(mockRecipes, selectedTags, document.getElementById('search-bar').value);
-    expect(filtered).toHaveLength(1);
-    expect(filtered[0].name).toBe('Poulet rôti');
-  });
-});
-
-// Tests pour la pagination
-describe('Pagination', () => {
-  const cardsPerPage = 6;
-  
-  test('Calcul correct du nombre total de pages', () => {
-    expect(Math.ceil(mockRecipes.length / cardsPerPage)).toBe(1);
-  });
-
-  test('Pagination avec liste vide', () => {
-    const empty = [];
-    expect(Math.ceil(empty.length / cardsPerPage)).toBe(0);
-  });
-});
-
-// Tests pour la gestion des tags
-describe('Gestion des tags', () => {
-  let tagsContainer;
-  
-  beforeEach(() => {
-    tagsContainer = document.getElementById('tags-container');
-    tagsContainer.innerHTML = '';
-  });
-
-  test('Ajout dun tag', () => {
-    addTag('Poulet', 'ingredients');
-    expect(tagsContainer.children).toHaveLength(1);
-    expect(tagsContainer.firstChild.textContent).toBe('Poulet (ingredients)');
-  });
-
-  test('Suppression dun tag', () => {
-    addTag('Poulet', 'ingredients');
-    const tag = tagsContainer.firstChild;
-    tag.click();
-    expect(tagsContainer.children).toHaveLength(0);
-  });
-
-  test('Ajout de tags multiples', () => {
-    addTag('Poulet', 'ingredients');
-    addTag('Four', 'appliances');
-    expect(tagsContainer.children).toHaveLength(2);
-  });
-});
-
-// Tests pour les filtres avancés
-describe('Filtres avancés', () => {
-  test('Population des listes de filtres', () => {
-    populateFilters(mockRecipes);
-    const ingredientFilter = document.getElementById('ingredient-filter');
-    const utensilFilter = document.getElementById('utensil-filter');
-    const applianceFilter = document.getElementById('appliance-filter');
-
-    // +1 pour l'option "Tous" par défaut
-    expect(ingredientFilter.options.length).toBe(3); // Poulet, Thym + "Tous"
-    expect(utensilFilter.options.length).toBe(5); // Plat, Four, Casserole, Poêle + "Tous"
-    expect(applianceFilter.options.length).toBe(3); // Four, Plaque de cuisson + "Tous"
-  });
-});
-
-// Fonction helper pour les tests
-function populateFilters(recipes) {
-  const unique = (arr) => [...new Set(arr)].sort();
-  const ingredients = unique(recipes.flatMap(recipe => recipe.ingredients.map(i => i.ingredient)));
-  const utensils = unique(recipes.flatMap(recipe => recipe.ustensils));
-  const appliances = unique(recipes.map(recipe => recipe.appliance));
-
-  const ingredientFilter = document.getElementById('ingredient-filter');
-  const utensilFilter = document.getElementById('utensil-filter');
-  const applianceFilter = document.getElementById('appliance-filter');
-
-  [
-    { select: ingredientFilter, options: ingredients },
-    { select: utensilFilter, options: utensils },
-    { select: applianceFilter, options: appliances }
-  ].forEach(({ select, options }) => {
-    select.innerHTML = '<option value="">Tous</option>';
-    options.forEach(option => {
-      const opt = document.createElement('option');
-      opt.value = option;
-      opt.textContent = option;
-      select.appendChild(opt);
+    // Réinitialiser les mocks
+    Object.values(mockDOMElements).forEach(element => {
+      if (element.innerHTML !== undefined) element.innerHTML = '';
+      if (element.addEventListener) element.addEventListener.mockClear();
+      if (element.appendChild) element.appendChild.mockClear();
     });
+    document.getElementById.mockClear();
+    fetch.mockClear();
   });
-}
 
-function filterRecipes(recipes, selectedTags, query) {
-  return recipes.filter(recipe => {
-    const matchesQuery = query.length < 3 || 
-      recipe.name.toLowerCase().includes(query.toLowerCase()) ||
-      recipe.description.toLowerCase().includes(query.toLowerCase()) ||
-      recipe.ingredients.some(i => i.ingredient.toLowerCase().includes(query.toLowerCase()));
+  it('devrait charger les recettes depuis le fichier JSON', async () => {
+    // Importer le script
+    require('../assets/js/script.js');
 
-    const matchesTags = selectedTags.ingredients.every(tag => recipe.ingredients.some(i => i.ingredient === tag)) &&
-      selectedTags.utensils.every(tag => recipe.ustensils.includes(tag)) &&
-      selectedTags.appliances.every(tag => recipe.appliance === tag);
+    // Simuler l'événement DOMContentLoaded
+    const loadEvent = new Event('DOMContentLoaded');
+    document.dispatchEvent(loadEvent);
 
-    return matchesQuery && matchesTags;
+    // Attendre que le fetch soit résolu
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // Vérifier que fetch a été appelé avec le bon chemin
+    expect(fetch).toHaveBeenCalledWith('assets/recipe.json');
   });
-}
 
-function addTag(tag, type) {
-  const tagElement = document.createElement('span');
-  tagElement.className = 'tag';
-  tagElement.textContent = `${tag} (${type})`;
-  tagElement.addEventListener('click', () => {
-    tagElement.remove();
+  it('devrait configurer correctement les événements', async () => {
+    // Importer le script
+    require('../assets/js/script.js');
+
+    // Simuler l'événement DOMContentLoaded
+    const loadEvent = new Event('DOMContentLoaded');
+    document.dispatchEvent(loadEvent);
+
+    // Attendre que le fetch soit résolu
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // Vérifier les événements principaux
+    expect(mockDOMElements['search-bar'].addEventListener).toHaveBeenCalledWith('input', expect.any(Function));
+    expect(mockDOMElements['prev-page'].addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(mockDOMElements['next-page'].addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
   });
-  document.getElementById('tags-container').appendChild(tagElement);
-}
+
+  it('devrait filtrer les recettes correctement', async () => {
+    // Importer le script
+    const scriptModule = require('../assets/js/script.js');
+
+    // Simuler l'événement DOMContentLoaded
+    const loadEvent = new Event('DOMContentLoaded');
+    document.dispatchEvent(loadEvent);
+
+    // Attendre que le fetch soit résolu
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // Simuler la sélection de filtres
+    const ingredientFilter = mockDOMElements['ingredient-filter'];
+    ingredientFilter.selectedOptions = [{ value: 'Tomate' }];
+    
+    // Déclencher l'événement de changement
+    const changeEvent = new Event('change');
+    ingredientFilter.dispatchEvent(changeEvent);
+
+    // Vérifier que les tags ont été mis à jour
+    expect(mockDOMElements['tags-container'].appendChild).toHaveBeenCalled();
+  });
+
+  it('devrait gérer la pagination', async () => {
+    // Importer le script
+    require('../assets/js/script.js');
+
+    // Simuler l'événement DOMContentLoaded
+    const loadEvent = new Event('DOMContentLoaded');
+    document.dispatchEvent(loadEvent);
+
+    // Attendre que le fetch soit résolu
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // Simuler un clic sur le bouton suivant
+    const nextPageButton = mockDOMElements['next-page'];
+    nextPageButton.dispatchEvent(new Event('click'));
+
+    // Vérifier que la pagination a été mise à jour
+    expect(mockDOMElements['page-info'].textContent).toMatch(/Page \d+ sur \d+/);
+  });
+
+  it('devrait gérer la recherche', async () => {
+    // Importer le script
+    require('../assets/js/script.js');
+
+    // Simuler l'événement DOMContentLoaded
+    const loadEvent = new Event('DOMContentLoaded');
+    document.dispatchEvent(loadEvent);
+
+    // Attendre que le fetch soit résolu
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    // Simuler une recherche
+    const searchBar = mockDOMElements['search-bar'];
+    searchBar.value = 'Salade';
+    searchBar.dispatchEvent(new Event('input'));
+
+    // Vérifier que les tags de recherche ont été mis à jour
+    expect(mockDOMElements['tags-container'].appendChild).toHaveBeenCalled();
+  });
+});
