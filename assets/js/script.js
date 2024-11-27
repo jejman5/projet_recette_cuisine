@@ -74,12 +74,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         updatePagination();
     }
 
-    // Gestion des filtres avancés
     function populateFilters() {
-        const unique = (arr) => [...new Set(arr)].sort();
-        const ingredients = unique(recipes.flatMap(recipe => recipe.ingredients.map(i => i.ingredient)));
-        const utensils = unique(recipes.flatMap(recipe => recipe.ustensils));
-        const appliances = unique(recipes.map(recipe => recipe.appliance));
+        const getCurrentlyVisibleRecipes = () => {
+            return filteredRecipes.length > 0 ? filteredRecipes : recipes;
+        };
+
+        // Fonction pour mettre à jour dynamiquement les filtres
+        const dynamicFilterUpdate = () => {
+            const visibleRecipes = getCurrentlyVisibleRecipes();
+
+            // Mettre à jour les ingrédients
+            const ingredients = [...new Set(
+                visibleRecipes.flatMap(recipe => 
+                    recipe.ingredients.map(i => i.ingredient)
+                )
+            )].sort();
+
+            // Mettre à jour les ustensiles
+            const utensils = [...new Set(
+                visibleRecipes.flatMap(recipe => recipe.ustensils)
+            )].sort();
+
+            // Mettre à jour les appareils
+            const appliances = [...new Set(
+                visibleRecipes.map(recipe => recipe.appliance)
+            )].sort();
+
+            // Mettre à jour les filtres
+            updateMultiSelect(ingredientFilter, ingredients);
+            updateMultiSelect(utensilFilter, utensils);
+            updateMultiSelect(applianceFilter, appliances);
+
+            setupFilterSearch(ingredientSearch, ingredientFilter);
+            setupFilterSearch(utensilSearch, utensilFilter);
+            setupFilterSearch(applianceSearch, applianceFilter);
+        };
+
+        // Initialisation des filtres
+        const ingredients = [...new Set(
+            recipes.flatMap(recipe => recipe.ingredients.map(i => i.ingredient))
+        )].sort();
+        const utensils = [...new Set(recipes.flatMap(recipe => recipe.ustensils))].sort();
+        const appliances = [...new Set(recipes.map(recipe => recipe.appliance))].sort();
 
         updateMultiSelect(ingredientFilter, ingredients);
         updateMultiSelect(utensilFilter, utensils);
@@ -88,6 +124,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupFilterSearch(ingredientSearch, ingredientFilter);
         setupFilterSearch(utensilSearch, utensilFilter);
         setupFilterSearch(applianceSearch, applianceFilter);
+
+        // Ajouter cette méthode à l'objet global pour pouvoir l'appeler
+        window.dynamicFilterUpdate = dynamicFilterUpdate;
     }
 
     function setupFilterSearch(searchInput, selectElement) {
@@ -101,11 +140,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateMultiSelect(select, options) {
+        // Stocker la sélection actuelle
+        const currentSelectedValues = Array.from(select.selectedOptions).map(opt => opt.value);
+        
         select.innerHTML = '';
         options.forEach(option => {
             const opt = document.createElement('option');
             opt.value = option;
             opt.textContent = option;
+            
+            // Restaurer la sélection précédente si possible
+            if (currentSelectedValues.includes(option)) {
+                opt.selected = true;
+            }
+            
             select.appendChild(opt);
         });
     }
@@ -121,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Gestion des événements pour les filtres
-   [ingredientFilter, utensilFilter, applianceFilter].forEach(filter => {
+    [ingredientFilter, utensilFilter, applianceFilter].forEach(filter => {
         filter.addEventListener('change', (event) => {
             const { id } = event.target;
     
@@ -139,8 +187,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
     
             selectedTags[type] = Array.from(event.target.selectedOptions).map(option => option.value);
-            updateTagDisplay(type);
+            updateTagDisplay(type, event.target);
             filterRecipes();
+            
+            // Mettre à jour dynamiquement les autres filtres
+            window.dynamicFilterUpdate();
         });
     });
     
@@ -215,6 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayRecipes();
     }
 
+
     // Gestion des événements pour les boutons de pagination
     prevPageButton.addEventListener('click', () => {
         if (currentPage > 1) {
@@ -238,18 +290,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextPageButton.disabled = currentPage === maxPage;
     }
 
+    let searchTimeout;
     searchBar.addEventListener('input', () => {
-        const query = searchBar.value.trim();
-        
-        // Supprimer l'ancien tag de recherche
+        // Clear any existing timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Remove all existing search tags
         const oldSearchTags = tagsContainer.querySelectorAll('.tag[data-type="search"]');
         oldSearchTags.forEach(tag => tag.remove());
         selectedTags.search = [];
 
-        if (query.length >= 3) {
-            addSearchTag(query);
-        }
-        
-        filterRecipes();
+        // Debounce the search to only trigger after 500ms of no typing
+        searchTimeout = setTimeout(() => {
+            const query = searchBar.value.trim();
+            
+            if (query.length >= 3) {
+                addSearchTag(query);
+                filterRecipes();
+            } else if (query.length === 0) {
+                // If search bar is empty, reset to show all recipes
+                filteredRecipes = recipes;
+                currentPage = 1;
+                displayRecipes();
+            }
+        }, 500);
     });
 });
