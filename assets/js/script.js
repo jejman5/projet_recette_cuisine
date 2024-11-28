@@ -19,13 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentPage = 1;
     const cardsPerPage = 6;
 
-    // Chargement des données
     try {
         const response = await fetch('assets/recipe.json');
         recipes = await response.json();
         filteredRecipes = recipes;
         
-        // Déplacez l'initialisation ici, après avoir chargé les recettes
         populateFilters();
         updatePagination();
         displayRecipes();
@@ -33,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("Erreur de chargement des recettes :", error);
     }
 
-    // Mise à jour des recettes affichées
     function displayRecipes() {
         recipesContainer.innerHTML = '';
 
@@ -119,7 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupFilterSearch('utensil-search', 'utensil-filter');
         setupFilterSearch('appliance-search', 'appliance-filter');
 
-        // Configuration des événements pour les nouveaux filtres
         setupMultiSelectEvents('ingredient-filter');
         setupMultiSelectEvents('utensil-filter');
         setupMultiSelectEvents('appliance-filter');
@@ -156,7 +152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateTagDisplay(type, container);
                 filterRecipes();
                 
-                // Mettre à jour dynamiquement les autres filtres
                 window.dynamicFilterUpdate();
             }
         });
@@ -164,8 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateMultiSelect(filterId, options) {
         const container = document.getElementById(filterId);
-        container.innerHTML = ''; // Vider le conteneur
-
+        container.innerHTML = ''; 
         options.forEach(option => {
             const optionDiv = document.createElement('div');
             optionDiv.className = 'multi-select-option';
@@ -211,10 +205,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Gestion des événements pour les filtres
     [ingredientFilter, utensilFilter, applianceFilter].forEach(filter => {
         filter.addEventListener('change', (event) => {
-            // Vérifiez que l'événement vient d'une case à cocher
             if (event.target.type === 'checkbox') {
                 const containerElement = event.target.closest('.multi-select');
                 const containerId = containerElement.id;
@@ -240,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateTagDisplay(type, containerElement);
                 filterRecipes();
                 
-                // Mettre à jour dynamiquement les autres filtres
                 window.dynamicFilterUpdate();
             }
         });
@@ -265,15 +256,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function updateTagDisplay(type, filterContainer) {
-        // Supprimer les anciens tags pour ce type
         const existingTags = Array.from(tagsContainer.querySelectorAll(`.tag[data-type="${type}"]`));
         existingTags.forEach(tag => tag.remove());
     
-        // Trouver toutes les cases cochées dans le conteneur
         const checkedBoxes = filterContainer.querySelectorAll('input:checked');
         const selectedTags = Array.from(checkedBoxes).map(checkbox => checkbox.value);
     
-        // Créer des tags pour chaque option cochée
         selectedTags.forEach(tag => {
             const tagElement = document.createElement('span');
             tagElement.className = 'tag';
@@ -281,25 +269,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             tagElement.textContent = `${tag} (${type})`;
             
             tagElement.addEventListener('click', () => {
-                // Trouver et décocher la case correspondante
                 const checkbox = filterContainer.querySelector(`input[value="${tag}"]`);
                 if (checkbox) {
                     checkbox.checked = false;
                 }
     
-                // Supprimer le tag et mettre à jour les tags sélectionnés
                 selectedTags.splice(selectedTags.indexOf(tag), 1);
                 tagElement.remove();
                 filterRecipes();
                 
-                // Mettre à jour dynamiquement les autres filtres
                 window.dynamicFilterUpdate();
             });
             
             tagsContainer.appendChild(tagElement);
         });
     
-        // Mettre à jour l'objet selectedTags global
         switch(type) {
             case 'ingredients':
                 selectedTags.ingredients = selectedTags;
@@ -313,9 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Recherche principale et avancée
     function filterRecipes() {
-        // Récupérer les tags sélectionnés
         const selectedIngredients = Array.from(
             document.querySelectorAll('#ingredient-filter input:checked')
         ).map(input => input.value);
@@ -330,25 +312,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     
         const searchTerm = searchBar.value.trim().toLowerCase();
     
-        // Filtrer les recettes
         filteredRecipes = recipes.filter(recipe => {
-            // Filtre par ingrédients (au moins un des tags sélectionnés)
             const ingredientMatch = selectedIngredients.length === 0 || 
                 selectedIngredients.some(ing => 
                     recipe.ingredients.some(r => r.ingredient === ing)
                 );
     
-            // Filtre par ustensiles (tous les tags sélectionnés doivent être présents)
             const utensilMatch = selectedUtensils.length === 0 || 
                 selectedUtensils.every(utensil => 
                     recipe.ustensils.includes(utensil)
                 );
     
-            // Filtre par appareil
             const applianceMatch = selectedAppliances.length === 0 || 
                 selectedAppliances.includes(recipe.appliance);
     
-            // Filtre par recherche
             const searchMatch = !searchTerm || 
                 recipe.name.toLowerCase().includes(searchTerm) ||
                 recipe.description.toLowerCase().includes(searchTerm) ||
@@ -359,7 +336,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return ingredientMatch && utensilMatch && applianceMatch && searchMatch;
         });
     
-        // Réinitialiser à la première page
         currentPage = 1;
         displayRecipes();
     }
@@ -381,17 +357,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let searchTimeout;
     searchBar.addEventListener('input', () => {
-        // Clear any existing timeout
         if (searchTimeout) {
             clearTimeout(searchTimeout);
         }
 
-        // Remove all existing search tags
         const oldSearchTags = tagsContainer.querySelectorAll('.tag[data-type="search"]');
         oldSearchTags.forEach(tag => tag.remove());
         selectedTags.search = [];
 
-        // Debounce the search to only trigger after 500ms of no typing
         searchTimeout = setTimeout(() => {
             const query = searchBar.value.trim();
             
@@ -399,7 +372,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 addSearchTag(query);
                 filterRecipes();
             } else if (query.length === 0) {
-                // If search bar is empty, reset to show all recipes
                 filteredRecipes = recipes;
                 currentPage = 1;
                 displayRecipes();
